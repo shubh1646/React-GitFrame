@@ -3,6 +3,7 @@ import React from 'react'
 class Search extends React.Component {
     state = {
         username: ""
+       
     };
 
 
@@ -10,7 +11,7 @@ class Search extends React.Component {
 
 
 
-    handlekeyDown = e => {
+    handleUserNameChange = e => {
         const value = e.target.value;
         this.setState({
             username: value
@@ -22,7 +23,12 @@ class Search extends React.Component {
 
 
     render() {
-        const { username } = this.state;
+
+
+       
+         const {fetchData} = this.props
+         const { username } = this.state;
+         
         return (
 
            
@@ -34,7 +40,7 @@ class Search extends React.Component {
                     <div className="input-group mb-3">
                         <input type="text" class="form-control "  onChange={this.handleUserNameChange} name="username" placeholder="Github username" aria-label="Github's username" aria-describedby="button-addon2" />
                         <div className="input-group-append">
-                            <button className="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
+                            <button  onClick={()=>fetchData(username)} className="btn btn-outline-secondary" type="button" id="button-addon2">Search</button>
                         </div>
 
                     </div>
