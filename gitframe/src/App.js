@@ -7,7 +7,7 @@ import RepoCard from './components/RepoCard';
 
 
 //Total repos shared per page
-const PAGE_SIZE =10;
+const PAGE_SIZE = 10;
 
 class App extends React.Component {
 
@@ -18,8 +18,27 @@ class App extends React.Component {
     reposError: null,
     loading: false,
     page: 1,
+    fetchingRepos: false,
   };
 
+
+  componentDidMount() {
+    window.addEventListener('scroll', this.handleScroll);
+  }
+
+  componentWillMount() {
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
+  //we need two values current scroll pos max scroll pos
+  handleScroll = () => {
+    const currentScroll = window.scrollY;
+    const maxScroll = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+   const {page,user} = this.state
+    if ( user && maxScroll - currentScroll <= 100 &&
+     
+     page*PAGE_SIZE < user.public_repos) this.loadMore();
+  }
 
 
   fetchUserData = async (username) => {
@@ -37,13 +56,13 @@ class App extends React.Component {
 
 
   fetchRepos = async (username) => {
-    const {page} = this.state;
+    const { page } = this.state;
     const res = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=${PAGE_SIZE}`);
 
     if (res.ok) {
 
       const data = await res.json();
-      return { data , page : page+1};
+      return { data, page: page + 1 };
     }
 
     const error = (await res.json()).message;
@@ -102,22 +121,27 @@ class App extends React.Component {
 
   /// we using function here because there cabn be inconsistancy in upation of repos 
 
-  loadMore =  async ()=>{
-    const {repos}  = this.state;
-    const {data,page } = await this.fetchRepos(this.state.user.login);
-  if(data) 
-  this.setState(state =>({
-    page,
-    repos : [... repos , ... data]
-  }));
-  
-  
+  loadMore = async () => {
+    if (this.state.fetchingRepos == true) return;
+
+    this.setState({ fetchingRepos: true }, async () => {
+      const { repos } = this.state;
+      const { data, page } = await this.fetchRepos(this.state.user.login);
+      if (data)
+        this.setState(state => ({
+          page,
+          repos: [...repos, ...data],
+          fetchingRepos: false
+        }));
+
+    })
+
   };
 
   render() {
     const { userdataError, reposError, loading, user, repos, page } = this.state;
     //we decide should be show loader button or not
-   // const hasNextPage = page*PAGE_SIZE >= user.public_repos;
+    // const hasNextPage = page*PAGE_SIZE >= user.public_repos;
 
 
 
@@ -129,11 +153,11 @@ class App extends React.Component {
         {!loading && !userdataError && user && <UserCard user={user} />}
         {reposError && <p className="text-danger">{reposError}</p>}
         {!loading && !reposError && repos.map(repo => <RepoCard key={repo.id} repo={repo} />)}
-          
-      {!loading && !userdataError && user&&(page -10)*PAGE_SIZE<user.public_repos &&(
-         < button className="btn btn-success" onClick={this.loadMore}>Load More
-         </button>
-      ) }
+
+        {!loading && !userdataError && user && (page - 10) * PAGE_SIZE < user.public_repos && (
+          < button className="btn btn-success" onClick={this.loadMore}>Load More
+          </button>
+        )}
       </div>
     );
   }
