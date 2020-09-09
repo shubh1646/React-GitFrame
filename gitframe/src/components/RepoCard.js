@@ -14,7 +14,7 @@ const RepoCard  = ({repo}) =>(
         <p>
           <strong>Watchers:</strong> {repo.watchers_count}
           </p>
-          <p><strong>Language : </strong>{repo.language}</p>
+          { repo.language!=undefined  && ( <p><strong>Language : </strong>{repo.language}</p>)}
         </a>
     </div>
 </div>
